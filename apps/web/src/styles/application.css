@@ -1,0 +1,231 @@
+@import "tailwindcss";
+
+/* Tailwind's default dark variant is a prefers-color-scheme media query, and
+   the shadcn primitives carry dark: utilities. With no dark palette defined,
+   a viewer whose system is in dark mode got those utilities alone — a grey fill
+   on every input and outline button, over an otherwise light page. Pinning the
+   variant to a class nothing sets keeps them dormant until the theme exists,
+   without editing upstream components. When a dark theme lands it is a block of
+   role overrides under .dark, and these wake up with it. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Two layers, because a dark theme has to stay additive.
+   Layer 1 is the palette: brand colours measured from the institutional site
+   and neutral/status ramps derived from them. It is never exposed to Tailwind,
+   so no utility can name a raw colour.
+   Layer 2 is the roles. A theme redefines roles, or points them at other rungs
+   of the same ramps, and touches nothing else. Measured contrast ratios for
+   every pair below are in DESIGN.md. */
+:root {
+  /* Layer 1 — palette */
+  --brand-green-950: oklch(0.285 0.056 157.5); /* #0c321f, hover only */
+  --brand-green-900: oklch(0.343 0.0674 156.6); /* #14432a, the primary */
+  --brand-green-800: oklch(0.4372 0.0901 142.17); /* #325e2e, the site's deep green */
+  --brand-green-100: oklch(0.956 0.032 145);
+  --brand-green-50: oklch(0.973 0.016 155);
+
+  /* Neutrals still carry the brand hue, at a third of the chroma they used to.
+     With green a detail rather than a field, a tint strong enough to notice on
+     the page ground was the green being predominant by another route: every
+     surface read faintly mint. At this chroma they read grey and the family is
+     a whisper, which is what a neutral is for. */
+  --neutral-0: oklch(1 0 0);
+  --neutral-50: oklch(0.976 0.003 142);
+  --neutral-100: oklch(0.964 0.004 142);
+  --neutral-200: oklch(0.94 0.004 142);
+  --neutral-300: oklch(0.888 0.005 142);
+  --neutral-400: oklch(0.81 0.005 142);
+  --neutral-500: oklch(0.6375 0.005 142);
+  --neutral-600: oklch(0.482 0.006 142);
+  --neutral-900: oklch(0.268 0.006 142);
+
+  --amber-100: oklch(0.964 0.048 95);
+  --amber-400: oklch(0.78 0.105 95);
+  --amber-800: oklch(0.43 0.085 75);
+  --red-100: oklch(0.955 0.02 25);
+  --red-400: oklch(0.79 0.09 25);
+  --red-600: oklch(0.545 0.205 27);
+  --red-700: oklch(0.46 0.16 27);
+  --green-400: oklch(0.77 0.08 145);
+
+  --ink-alpha: oklch(0.268 0.018 142 / 0.08);
+
+  /* Layer 2 — roles */
+  --background: var(--neutral-100);
+  --foreground: var(--neutral-900);
+
+  --card: var(--neutral-0);
+  --card-foreground: var(--neutral-900);
+  --popover: var(--neutral-0);
+  --popover-foreground: var(--neutral-900);
+
+  /* Hover darkens. shadcn's default is bg-primary at 90% alpha, which over a
+     light surface *lightens* the fill, and a green has no headroom to lighten.
+     Hover goes to the next rung down instead. */
+  --primary: var(--brand-green-900);
+  --primary-foreground: var(--neutral-0);
+  --primary-hover: var(--brand-green-950);
+
+  --secondary: var(--neutral-200);
+  --secondary-foreground: var(--brand-green-900);
+
+  --muted: var(--neutral-50);
+  --muted-foreground: var(--neutral-600);
+
+  /* The one place green is spent by default: a hover, a selected row, the
+     current navigation item. A whisper of the primary rather than the primary,
+     because it lands under body text and beside twenty other rows. */
+  --accent: var(--brand-green-50);
+  --accent-foreground: var(--brand-green-900);
+
+  --destructive: var(--red-600);
+  --destructive-foreground: var(--neutral-0);
+  --destructive-hover: var(--red-700);
+
+  /* Two boundary tokens, not one. --border rules a table and edges a card: it
+     is decorative, redundant with the surface change beside it, and a 3:1 grey
+     there would outline every row of an hour-long reading session. --input is
+     the boundary of a control, which is the only thing WCAG 1.4.11 asks 3:1 of,
+     and it clears 3:1 on card, muted and page background alike. */
+  --border: var(--neutral-300);
+  --input: var(--neutral-500);
+  --ring: var(--brand-green-900);
+
+  /* Domain state. Each tone is a tinted surface, a foreground that also clears
+     4.5:1 on a white card, and its own boundary — three cues before the label,
+     which is what actually carries the meaning. */
+  --status-pending: var(--amber-100);
+  --status-pending-foreground: var(--amber-800);
+  --status-pending-border: var(--amber-400);
+
+  --status-complete: var(--brand-green-100);
+  --status-complete-foreground: var(--brand-green-800);
+  --status-complete-border: var(--green-400);
+
+  --status-neutral: var(--neutral-50);
+  --status-neutral-foreground: var(--neutral-600);
+  --status-neutral-border: var(--neutral-400);
+
+  --status-destructive: var(--red-100);
+  --status-destructive-foreground: var(--red-700);
+  --status-destructive-border: var(--red-400);
+
+  --status-emphasis: var(--brand-green-900);
+  --status-emphasis-foreground: var(--neutral-0);
+  --status-emphasis-border: var(--brand-green-900);
+
+  --radius: 0.5rem;
+}
+
+@theme {
+  /* IBM Plex Sans is loaded above from Google Fonts at 400/500/600 with
+     display=swap, and every weight has a system fallback in the stack. It earns
+     the request on the screens this application actually is: its numerals are
+     unambiguous at 12px in a column of scores, its diacritics are complete for
+     Portuguese, and it renders the same on the mixed Windows machines the
+     secretaries use as on a facilitator's phone, which the system stack does
+     not. */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+    sans-serif;
+
+  /* One word wears this and nothing else does: the application's name, where a
+     picture used to be. Outfit is the closest free face to Nexa, which is the
+     institution's display type — so the wordmark reads as the same institution
+     without shipping a second face for page titles, which DESIGN.md still
+     refuses. One weight, latin only. */
+  --font-display: "Outfit", var(--font-sans);
+
+  /* Elevation is tinted with the ink colour rather than black, and overrides
+     Tailwind's scale so that existing shadow utilities in the primitives pick
+     it up without naming a colour. */
+  --shadow-xs: 0 1px 2px 0 var(--ink-alpha);
+  --shadow-sm: 0 1px 2px 0 var(--ink-alpha), 0 1px 3px 0 var(--ink-alpha);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-hover: var(--destructive-hover);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-status-pending: var(--status-pending);
+  --color-status-pending-foreground: var(--status-pending-foreground);
+  --color-status-pending-border: var(--status-pending-border);
+  --color-status-complete: var(--status-complete);
+  --color-status-complete-foreground: var(--status-complete-foreground);
+  --color-status-complete-border: var(--status-complete-border);
+  --color-status-neutral: var(--status-neutral);
+  --color-status-neutral-foreground: var(--status-neutral-foreground);
+  --color-status-neutral-border: var(--status-neutral-border);
+  --color-status-destructive: var(--status-destructive);
+  --color-status-destructive-foreground: var(--status-destructive-foreground);
+  --color-status-destructive-border: var(--status-destructive-border);
+  --color-status-emphasis: var(--status-emphasis);
+  --color-status-emphasis-foreground: var(--status-emphasis-foreground);
+  --color-status-emphasis-border: var(--status-emphasis-border);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground text-sm;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Tabular figures where columns have to line up, not in prose. */
+  table,
+  input,
+  output {
+    font-variant-numeric: tabular-nums;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  /* The floor for anything the primitives do not style themselves. shadcn's
+     focus ring is the ring colour at 50% alpha, and a half-transparent tint over
+     a light surface cannot reach 3:1 at any hue — the maths caps it near 2:1 —
+     so the primitives carry a full-strength outline instead and this backs
+     them up. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
