@@ -9,21 +9,34 @@ export interface TokenPair {
 }
 
 export function getAccessToken(): string | null {
-  return localStorage.getItem(ACCESS_TOKEN_KEY)
+  return localStorage.getItem(ACCESS_TOKEN_KEY) ?? sessionStorage.getItem(ACCESS_TOKEN_KEY)
 }
 
 export function getRefreshToken(): string | null {
-  return localStorage.getItem(REFRESH_TOKEN_KEY)
+  return localStorage.getItem(REFRESH_TOKEN_KEY) ?? sessionStorage.getItem(REFRESH_TOKEN_KEY)
 }
 
-export function setTokens(tokens: TokenPair): void {
-  localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken)
-  localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken)
+// O "lembre-se de mim" da tela de login decide onde a sessão mora, que é o que
+// a caixa significava no Devise: marcada, sobrevive a fechar o navegador
+// (localStorage); desmarcada, morre com a aba (sessionStorage). Um refresh não
+// recebe a escolha, então herda a do login olhando onde o par atual está.
+function tokenStore(remember?: boolean): Storage {
+  if (remember !== undefined) return remember ? localStorage : sessionStorage
+  return localStorage.getItem(REFRESH_TOKEN_KEY) !== null ? localStorage : sessionStorage
+}
+
+export function setTokens(tokens: TokenPair, remember?: boolean): void {
+  const store = tokenStore(remember)
+  clearTokens()
+  store.setItem(ACCESS_TOKEN_KEY, tokens.accessToken)
+  store.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken)
 }
 
 export function clearTokens(): void {
-  localStorage.removeItem(ACCESS_TOKEN_KEY)
-  localStorage.removeItem(REFRESH_TOKEN_KEY)
+  for (const store of [localStorage, sessionStorage]) {
+    store.removeItem(ACCESS_TOKEN_KEY)
+    store.removeItem(REFRESH_TOKEN_KEY)
+  }
 }
 
 export class ApiError extends Error {

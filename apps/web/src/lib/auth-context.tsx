@@ -20,7 +20,7 @@ export interface CurrentUser {
 interface AuthContextValue {
   user: CurrentUser | null
   isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string, rememberMe: boolean) => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -46,8 +46,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => setSessionExpiredHandler(null)
   }, [])
 
-  const login = async (email: string, password: string) => {
-    setTokens(await apiFetch<TokenPair>('/auth/login', { method: 'POST', body: { email, password } }))
+  const login = async (email: string, password: string, rememberMe: boolean) => {
+    const tokens = await apiFetch<TokenPair>('/auth/login', { method: 'POST', body: { email, password } })
+    setTokens(tokens, rememberMe)
     setUser(await apiFetch<CurrentUser>('/users/me'))
   }
 
