@@ -1,3 +1,5 @@
+import { cn } from '@/lib/cn'
+
 /**
  * The application's name, set in the display face. It replaces the logo mark:
  * one word carries the identity in the chrome, and the picture it replaces cost
@@ -8,5 +10,9 @@ interface Props {
 }
 
 export function Wordmark({ className = 'text-xl' }: Props) {
-  return <span className={`font-display font-semibold tracking-tight text-primary ${className}`}>Thinktank</span>
+  return (
+    <span className={cn('font-display font-semibold tracking-tight text-primary', className)}>
+      Thinktank
+    </span>
+  )
 }
